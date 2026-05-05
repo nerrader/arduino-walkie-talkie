@@ -6,7 +6,7 @@
 const byte rxPin = 10;
 const byte txPin = 11;
 
-SoftwareSerial HC12(rxPin, txPin); // recieve at pin 10, outputs at pin 11
+SoftwareSerial HC12(rxPin, txPin); // recieve at pin rxd, outputs at pin txd
 
 LiquidCrystal_I2C lcd(0x27, 20, 4);
 
@@ -30,33 +30,40 @@ const byte colPins[COLS] = {5, 4, 3, 2};
 Keypad customKeypad = Keypad(makeKeymap(hexaKeys), rowPins, colPins, ROWS, COLS);
 
 // letter layout thing
-const char* layout[] = {" 0", ".,1", "abc2", "def3", "ghi4", "jkl5", "mno6", "pqrs7", "tuv8", "wxyz9"};
+const char* lowerLayout[] = {" 0", ".,1", "abc2", "def3", "ghi4", "jkl5", "mno6", "pqrs7", "tuv8", "wxyz9"};
+const char* upperLayout[] = {" 0", ".,1", "abc2", "def3", "ghi4", "jkl5", "mno6", "pqrs7", "tuv8", "wxyz9"};
+
+bool isCapsLock = false;
 
 void setup() {
-  Wire.begin();
+  Wire.begin(); // apparently this is for the i2c or lcd screen idk how it works but it does
   HC12.begin(9600);
   lcd.init();
   lcd.backlight();
-  lcd.print("Walkie Talkie Ready...");
+  lcd.print("the walkie talkie is ready sir");
 
   delay(500);
   lcd.clear();
 }
 
 int lastKey = -1;
-byte sameKeyTaps = 0;
+int sameKeyTaps = 0;
 
 void loop() {
   if (HC12.available()) {
     lcd.clear();
     lcd.setCursor(0, 1);
-    lcd.print(HC12.readString());
+
+    // i do this because readString is apparently slow
+    while (HC12.available()){
+      lcd.write(HC12.read());
+    }
+    break;
   }
 
   char key = customKeypad.getKey();
-  // *= send
-  // # = backspace
-  // c = convert to letter
+  // if in the 0-9 keys
+
   if (key >= '0' && key <= '9') {
     int intKey = key - '0';
     if (intKey == lastKey || lastKey == -1){ //same key or first key you pressed
@@ -71,28 +78,39 @@ void loop() {
     refreshLCD();
   }
   // if not in the 0-9 keys
+
   else {
     switch (key){
-      case 'A': 
+
+      case 'A': //toggles on and off caps lock pretty much
+        isCapsLock = !isCapsLock;
         break;
-      case 'B': // backspace for the number key taps
+
+      case 'B': // backspace for number of key taps or visible message
         if (visibleMessage.length() > 0){
           visibleMessage.remove(visibleMessage.length() - 1);
         }
         refreshLCD();
         break;
-      case 'C': // convert currentNumbers to char
-        int index = (sameKeyTaps - 1) % strlen(layout[lastKey]); // so if you press it 5 times, it goes back to the first char
-        currentMessage += layout[lastKey][index];
+
+      case 'C': // convert sameKeyTaps to char
+        // double pointer because apprantly strings are just lists of chars, and lists are pointers so
+        const char** currentLayout = isCapsLock ? upperLayout : lowerLayout;
+        int index = (sameKeyTaps - 1) % strlen(currentLayout[lastKey]); // so if you press it 5 times, it goes back to the first char
+        currentMessage += currentLayout[lastKey][index];
         visibleMessage = currentMessage;
         refreshLCD();
-        
         // resetting the variables
         sameKeyTaps = 0; 
         lastKey = -1;
         break;
-      case 'D':
+
+      case 'D': // destroy, or clear the entire thing
+        currentMessage = "";
+        visibleMessage = currentMessage;
+        refreshLCD();
         break;
+
       case '*': //send
         HC12.print(currentMessage);
         currentMessage = "";
@@ -101,11 +119,16 @@ void loop() {
         lcd.print("Message sent!");
         break;
       case '#': // backspace
-        if (currentMessage.length() > 0){
-          currentMessage.remove(currentMessage.length() - 1);
+        if (sameKeyTaps > 0) { //basically if the user has number keys pressed
+          visibleMessage.remove(visibleMessage.length() - 1);
+          sameKeyTaps--;
+          refreshLCD();
         }
-        visibleMessage = currentMessage;
-        refreshLCD();
+        else if (currentMessage.length() > 0){ //else it checks if current message is not none
+          currentMessage.remove(currentMessage.length() - 1);
+          visibleMessage = currentMessage;
+          refreshLCD();
+        }
         break;
     }
   }
