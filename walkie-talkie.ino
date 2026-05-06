@@ -52,7 +52,7 @@ int sameKeyTaps = 0;
 void loop() {
   if (HC12.available()) {
     lcd.clear();
-    lcd.setCursor(0, 1);
+    lcd.setCursor(0, 0);
 
     // i do this because readString is apparently slow
     while (HC12.available()){
@@ -105,6 +105,7 @@ void loop() {
         currentMessage = "";
         visibleMessage = currentMessage;
         sameKeyTaps = 0;
+        lastKey = -1;
         refreshLCD();
         break;
 
@@ -112,6 +113,8 @@ void loop() {
         HC12.print(currentMessage);
         currentMessage = "";
         visibleMessage = "";
+        lastKey = -1;
+        sameKeyTaps = 0;
         lcd.clear();
         lcd.print("Message sent!");
         break;
@@ -119,11 +122,13 @@ void loop() {
         if (sameKeyTaps > 0) { //basically if the user has number keys pressed
           visibleMessage.remove(visibleMessage.length() - 1);
           sameKeyTaps--;
+          if (sameKeyTaps == 0) lastKey = -1;
           refreshLCD();
         }
         else if (currentMessage.length() > 0){ //else it checks if current message is not none
           currentMessage.remove(currentMessage.length() - 1);
           visibleMessage = currentMessage;
+          lastKey = -1;
           refreshLCD();
         }
         break;
@@ -134,6 +139,6 @@ void loop() {
 
 void refreshLCD(){
   lcd.clear();
-  lcd.setCursor(0,1);
+  lcd.setCursor(0, 0);
   lcd.print(visibleMessage);
 }
