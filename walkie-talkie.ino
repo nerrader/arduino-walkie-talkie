@@ -37,7 +37,7 @@ bool isCapsLock = false;
 
 void setup() {
 
-  const int baudRate = 9600
+  const int baudRate = 9600;
   Wire.begin(); // apparently this is for the i2c or lcd screen idk how it works but it does
   HC12.begin(baudRate);
   Serial.begin(baudRate)
@@ -66,11 +66,12 @@ void loop() {
   }
 
   char key = customKeypad.getKey();
-  // if in the 0-9 keys
-
+  
   if (!key){
     return;
   }
+
+  // if in the 0-9 keys
 
   Serial.println(key)
   if (key >= '0' && key <= '9') {
@@ -89,18 +90,20 @@ void loop() {
   // if not in the 0-9 keys
 
   else {
-    Serial.println(key)
+    Serial.println(key);
     switch (key){
-      case 'A': //toggles on and off caps lock pretty much
-        Serial.println("Reached A block")
+      case 'A': {//toggles on and off caps lock pretty much
+        Serial.println("Reached A block");
         isCapsLock = !isCapsLock;
         break;
+      }
 
-      case 'B':
-        Serial.println("Reached B Block")
+      case 'B': {
+        Serial.println("Reached B Block");
         break;
+      }
 
-      case 'C': // convert sameKeyTaps to char
+      case 'C': {// convert sameKeyTaps to char
         // double pointer because apprantly strings are just lists of chars, and lists are pointers so
         Serial.println("Reached C Block")
         if (sameKeyTaps == 0 || lastKey == -1) break;
@@ -113,18 +116,20 @@ void loop() {
         sameKeyTaps = 0; 
         lastKey = -1;
         break;
+      }
 
-      case 'D': // destroy, or clear the entire thing
-        Serial.println("Reached D Block")
+      case 'D': {// destroy, or clear the entire thing
+        Serial.println("Reached D Block");
         currentMessage = "";
         visibleMessage = currentMessage;
         sameKeyTaps = 0;
         lastKey = -1;
         refreshLCD();
         break;
+      }
 
-      case '*': //send
-        Serial.println("Reached * Block")
+      case '*': {//send
+        Serial.println("Reached * Block");
         HC12.print(currentMessage);
         currentMessage = "";
         visibleMessage = "";
@@ -134,9 +139,10 @@ void loop() {
         lcd.print("Message sent!");
         delay(500);
         break;
+      }
 
-      case '#': // backspace
-        Serial.println("Reached # Block")
+      case '#': {// backspace
+        Serial.println("Reached # Block");
         if (sameKeyTaps > 0) { //basically if the user has number keys pressed
           visibleMessage.remove(visibleMessage.length() - 1);
           sameKeyTaps--;
@@ -150,6 +156,12 @@ void loop() {
           refreshLCD();
         }
         break;
+      }
+
+      default: {
+        Serial.println("what the fuck");
+        Serial.print(key);
+      }
     }
   }
 
