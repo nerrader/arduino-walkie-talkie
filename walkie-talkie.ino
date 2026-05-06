@@ -104,6 +104,7 @@ void loop() {
       case 'D': // destroy, or clear the entire thing
         currentMessage = "";
         visibleMessage = currentMessage;
+        sameKeyTaps = 0;
         refreshLCD();
         break;
 
