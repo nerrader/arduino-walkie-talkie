@@ -58,7 +58,7 @@ void loop() {
     while (HC12.available()){
       lcd.write(HC12.read());
     }
-    break;
+    return;
   }
 
   char key = customKeypad.getKey();
@@ -86,11 +86,7 @@ void loop() {
         isCapsLock = !isCapsLock;
         break;
 
-      case 'B': // backspace for number of key taps or visible message
-        if (visibleMessage.length() > 0){
-          visibleMessage.remove(visibleMessage.length() - 1);
-        }
-        refreshLCD();
+      case 'B':
         break;
 
       case 'C': // convert sameKeyTaps to char
