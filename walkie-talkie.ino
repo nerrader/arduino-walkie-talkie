@@ -31,7 +31,7 @@ Keypad customKeypad = Keypad(makeKeymap(hexaKeys), rowPins, colPins, ROWS, COLS)
 
 // letter layout thing
 const char* lowerLayout[] = {" 0", ".,1", "abc2", "def3", "ghi4", "jkl5", "mno6", "pqrs7", "tuv8", "wxyz9"};
-const char* upperLayout[] = {" 0", ".,1", "abc2", "def3", "ghi4", "jkl5", "mno6", "pqrs7", "tuv8", "wxyz9"};
+const char* upperLayout[] = {" 0", ".,1", "ABC2", "DEF3", "GHI4", "JKL5", "MNO6", "PQRS7", "TUV8", "WXYZ9"};
 
 bool isCapsLock = false;
 
@@ -69,7 +69,6 @@ void loop() {
   if (!key){
     return;
   }
-
   // if in the 0-9 keys
 
   Serial.println(key);
@@ -84,6 +83,9 @@ void loop() {
       visibleMessage = (currentMessage + key); // reset all the visible numbers
     }
     lastKey = intKey;
+
+    Serial.println("Current Message:" + currentMessage);
+    Serial.println("Visible Message:" + visibleMessage);
     refreshLCD();
   }
   // if not in the 0-9 keys
@@ -110,6 +112,9 @@ void loop() {
         int index = (sameKeyTaps - 1) % strlen(currentLayout[lastKey]); // so if you press it 5 times, it goes back to the first char
         currentMessage += currentLayout[lastKey][index];
         visibleMessage = currentMessage;
+
+        Serial.println("Current Message:" + currentMessage);
+        Serial.println("Visible Message:" + visibleMessage);
         refreshLCD();
         // resetting the variables
         sameKeyTaps = 0; 
