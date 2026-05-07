@@ -62,7 +62,6 @@ void loop() {
     while (HC12.available()){
       lcd.write(HC12.read());
     }
-    return;
   }
 
   char key = customKeypad.getKey();
